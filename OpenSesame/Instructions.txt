@@ -1,12 +1,23 @@
 ﻿<b>Ende der Übungseinheit</b>
 
-Die Übungseinheit ist nun zu Ende.
-Ihnen werden nun 30 Minuten lang wieder mentale Rotationsaufgaben gezeigt.
+Die Übungseinheit ist nun zu Ende. Jetzt folgt der Stufentest.
+Ihnen werden nun wieder mentale Rotationsaufgaben gezeigt.
+
+Falls es die linke Figur ist, drücken Sie die <b>linke Maustaste</b>.
+
+Falls es die rechte Figur ist, drücken Sie die <b>rechte Maustaste</b>.
 
 Antworten sie so schnell wie möglich, aber machen sie möglichst wenig Fehler.
+
+Die Aufgaben werden Ihnen in Blöcken von 3 Minuten präsentiert. 
+In den letzten 15 Sekunden jedes Blocks werden Sie nach Ihrer kognitiven und körperlichen Anstrengung gefragt.
 
 Sie erhalten kein Feedback mehr, stattdessen sehen Sie nach jeder Aufgabe ein
 FX in der Mitte des Bildschirms.
 
-(Continue)Drücken sie die linke oder rechte Maustaste, um fortzufahren,
-wenn Sie sich bereit fühlen.
+Falls Sie körperlich ausgelastet sind (körperliche Anstrengung 10) wird die Einheit beendet.
+Falls Sie während eines Blocks körperlich ausgelastet sind, drücken Sie die mittlere Maustaste,
+um den Block vorzeitig zu beenden.
+
+(Continue)Drücken Sie die linke oder rechte Maustaste um zu starten.
+Es folgt zunächst ein Countdown von 5 Sekunden, dann kommen die Aufgaben.

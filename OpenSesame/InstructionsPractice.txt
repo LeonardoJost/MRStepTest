@@ -9,12 +9,17 @@ Falls es die linke Figur ist, drücken Sie die <b>linke Maustaste</b>.
 
 Falls es die rechte Figur ist, drücken Sie die <b>rechte Maustaste</b>.
 
-Legen Sie Ihren linken Zeigefinger auf die linke Maustaste und
-Ihren rechten Zeigefinger auf die rechte Maustaste am Touchpad.
-
 Antworten sie so schnell wie möglich, aber machen sie möglichst wenig Fehler.
 
-Zunächst haben Sie 10 Minuten zum Üben und Sie erhalten nach jeder Aufgabe Feedback, 
+Die Aufgaben werden Ihnen in Blöcken von 3 Minuten präsentiert. 
+In den letzten 15 Sekunden jedes Blocks werden Sie nach Ihrer kognitiven und körperlichen Anstrengung gefragt.
+
+Zunächst haben Sie 3 Blöcke zum Üben und Sie erhalten nach jeder Aufgabe Feedback, 
 ob Ihre Antwort richtig oder falsch war. (F1 - richtig, F2 - falsch)
 
+Falls Sie körperlich ausgelastet sind (körperliche Anstrengung 10) wird die Einheit beendet.
+Falls Sie während eines Blocks körperlich ausgelastet sind, drücken Sie die mittlere Maustaste,
+um den Block vorzeitig zu beenden.
+
 (Continue)Drücken Sie die linke oder rechte Maustaste um das Experiment zu starten.
+Es folgt zunächst ein Countdown von 5 Sekunden, dann kommen die Aufgaben.
