@@ -11,11 +11,12 @@ Falls es die rechte Figur ist, drücken Sie die <b>rechte Maustaste</b>.
 
 Antworten sie so schnell wie möglich, aber machen sie möglichst wenig Fehler.
 
-Die Aufgaben werden Ihnen in Blöcken von 3 Minuten präsentiert. 
-In den letzten 15 Sekunden jedes Blocks werden Sie nach Ihrer kognitiven und körperlichen Anstrengung gefragt.
-
 Zunächst haben Sie 3 Blöcke zum Üben und Sie erhalten nach jeder Aufgabe Feedback, 
 ob Ihre Antwort richtig oder falsch war. (F1 - richtig, F2 - falsch)
+
+Die Aufgaben werden Ihnen in Blöcken von 3 Minuten präsentiert. 
+In den letzten 15 Sekunden jedes Blocks werden Sie erst nach Ihrer kognitiven und dann
+nach Ihrer körperlichen Anstrengung gefragt.
 
 Falls Sie körperlich ausgelastet sind (körperliche Anstrengung 10) wird die Einheit beendet.
 Falls Sie während eines Blocks körperlich ausgelastet sind, drücken Sie die mittlere Maustaste,

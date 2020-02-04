@@ -193,7 +193,7 @@ define inline_script ParametersForBlock
 	set description "Executes Python code"
 	set _run ""
 	___prepare__
-	#start with part 1 (only numbering)
+	#start with part 1 (only numbering, value is increased in loop before access)
 	var.aaSubBlock=0
 	#overhead before start of first block
 	var.previousPartOverhead=0
@@ -328,6 +328,28 @@ define inline_script SetNamesAndResponses
 	else:
 		var.correct_response=3
 	__end__
+
+define inline_script SetTestControl
+	set description "Executes Python code"
+	___run__
+	#ask if test or control
+	#Create a form
+	form = Form(
+		cols=[1,1], rows=[2,1],
+		margins=(50,50,50,50), spacing=25
+	)
+	#show form with question and two buttons
+	form.set_widget(Label(text=var.testControlQuestion, center=False), (0,0), colspan=2)
+	form.set_widget(Button(text=var.testButtonText), (0,1))
+	form.set_widget(Button(text=var.controlButtonText), (1,1))	
+	form_response=form._exec()
+	print(form_response)
+	if form_response==var.testButtonText:
+		var.mainTest=1
+	else:
+		var.mainTest=0
+	__end__
+	set _prepare ""
 
 define inline_script ShowCountdown
 	set description "Executes Python code"
@@ -471,7 +493,16 @@ define sequence ShowInstructions_1
 	run ShowInstructions always
 	run EndInstructions always
 
+define sequence ShowRandomThings
+	set flush_keyboard yes
+	set description "Runs a number of items in sequence"
+	run randomizeDuration always
+	run setImages always
+	run randomStimulus always
+	run randomDurationMouseResponse always
+
 define loop ShowStimuli
+	set source_file ""
 	set source table
 	set repeat "[loopRuns]"
 	set order sequential
@@ -488,12 +519,18 @@ define sequence ShowStimuliSequence
 	set description "Führt mehrere Items nacheinander aus"
 	run ShowInstructionsAtstart always
 	run setStartTime always
+	run ShowStimulus "[mainTest]=1 or [aaBlock]=practice"
+	run ShowRandomThings "[mainTest]=0 and [aaBlock]=main"
+	run Feedback always
+	run calculateDuration always
+
+define sequence ShowStimulus
+	set flush_keyboard yes
+	set description "Runs a number of items in sequence"
 	run SetNamesAndResponses always
 	run Stimulus always
 	run mouseResponse always
 	run stimulusLogger always
-	run Feedback always
-	run calculateDuration always
 
 define sketchpad ShowTime
 	set duration 0
@@ -620,6 +657,7 @@ define sequence experiment
 	run parameters always
 	run StimulusRandomization always
 	run CreateID always
+	run SetTestControl always
 	run SetLogfile always
 	run Blocks always
 	run OnCallFunctions never
@@ -632,8 +670,8 @@ define inline_script formatTime
 	#format during prepare phase of next stimulus
 	#integer division
 	timeNow=self.time()-var.startTimeOfSubBlock
+	#time<0 happens during prepare phase of first stimulus of block as countdown is started in run phase
 	if timeNow<0:
-		print(timeNow)
 		timeNow=0
 	formatTimeMins=int(timeNow//1000//60)
 	leadingZeroMins=u''
@@ -673,6 +711,10 @@ define inline_script parameters
 	var.customID=0
 	#ID prompt (only necessary if customID is used)
 	var.IDprompt=u'Bitte ID eingeben und mit Enter bestätigen.'
+	#test and control condition (question and answer buttons)
+	var.testControlQuestion=u'Test- oder Kontrollbedingung?'
+	var.testButtonText=u'Test'
+	var.controlButtonText=u'Kontroll'
 	##feedback/fixation (fixation is automatically chosen if no feedback is given)
 	#also used to replace placeholders in instructions
 	var.feedbackCorrect=u'✓'
@@ -708,6 +750,8 @@ define inline_script parameters
 	var.orientations=[u'a',u'b']
 	#axes
 	var.axes=[u'y',u'z']
+	#controlmodels
+	var.controlModels=list(range(17,496+1))
 	__end__
 
 define inline_script prepareQuestion
@@ -789,6 +833,32 @@ define logger questionaireLogger
 	log aaSubBlock
 	log aaBlockQuestion
 
+define mouse_response randomDurationMouseResponse
+	set timeout "[randomDuration]"
+	set show_cursor no
+	set linked_sketchpad randomStimulus
+	set flush yes
+	set event_type mouseclick
+	set duration mouseclick
+	set description "Collects mouse responses"
+	set allowed_responses 2
+
+define sketchpad randomStimulus
+	set duration 0
+	set description "Präsentiert Stimuli"
+	draw image center=1 file="[modelLeftFile]" scale=1 show_if=always x=-300 y=-150 z_index=0
+	draw image center=1 file="[modelRightFile]" scale=1 show_if=always x=300 y=-150 z_index=0
+	draw image center=1 file="[stimulusFile]" scale=1 show_if=always x=0 y=150 z_index=0
+	draw textline center=1 color=white font_bold=no font_family=sans font_italic=no font_size=40 html=yes show_if=always text="[formatTime]" x=0 y=-300 z_index=0
+
+define inline_script randomizeDuration
+	set description "Executes Python code"
+	set _run ""
+	___prepare__
+	import random
+	var.randomDuration=random.randint(2000,5000)
+	__end__
+
 define inline_script roundTimeToSeconds
 	set description "Executes Python code"
 	___run__
@@ -799,14 +869,28 @@ define inline_script roundTimeToSeconds
 	__end__
 	set _prepare ""
 
+define inline_script setImages
+	set description "Executes Python code"
+	set _run ""
+	___prepare__
+	import random
+	def getRandomControlModel():
+		#get random stimuli
+		model=random.choice(var.controlModels)
+		return str(model)+u'_a.png'
+	#set filenames of stimuli
+	var.modelLeftFile=getRandomControlModel()
+	var.modelRightFile=getRandomControlModel()
+	var.stimulusFile=getRandomControlModel()
+	__end__
+
 define inline_script setStartTime
 	set description "Executes Python code"
 	___run__
 	#start time of run phase (after preparation)
 	var.duration=self.time()-var.startTimeOfSubBlock
 	__end__
-	___prepare__
-	__end__
+	set _prepare ""
 
 define logger stimulusLogger
 	set description "Registriert experimentelle Daten"
