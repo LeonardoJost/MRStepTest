@@ -1,9 +1,7 @@
 ﻿<b>Ende der Übungseinheit</b>
 
 Die Übungseinheit ist nun zu Ende. Jetzt folgt der Stufentest.
-Ihnen werden nun Zufallsfiguren gezeigt.
-
-Sie haben keine Aufgabe.
+Ihnen werden nun Zufallsfiguren gezeigt. Sie haben keine Aufgabe.
 
 Die Bilder wechseln nach 2-5 Sekunden und Sie sehen nach jedem Bild ein
 FX in der Mitte des Bildschirms.

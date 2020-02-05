@@ -39,7 +39,7 @@ set background "#000000"
 define sequence BlockSequence
 	set flush_keyboard yes
 	set description "Runs a number of items in sequence"
-	run ReadInstructions "[instructions]!=none"
+	run ReadInstructions always
 	run ShowInstructionsFixedDuration "[instructions]!=none"
 	run ParametersForBlock always
 	run SubBlocks always
@@ -69,7 +69,7 @@ define loop Blocks
 	setcycle 1 durationBreakSeconds 15
 	setcycle 1 feedbackDuration 500
 	setcycle 1 feedback False
-	setcycle 1 numberOfSubBlocks 100
+	setcycle 1 numberOfSubBlocks 20
 	setcycle 2 aaBlock questionaire
 	setcycle 2 instructions none
 	setcycle 2 questionaireFile "Fragebogen.txt"
@@ -261,6 +261,8 @@ define inline_script ReadInstructions
 	set _run ""
 	___prepare__
 	if var.instructions!=u'none':
+		if var.mainTest==0 and var.aaBlock==u'main':
+			var.instructions=var.instructions.split(u'.txt')[0]+u'Control.txt'
 		import string
 		with open(pool[var.instructions]) as file:
 			instructionsText = file.read()
@@ -343,7 +345,6 @@ define inline_script SetTestControl
 	form.set_widget(Button(text=var.testButtonText), (0,1))
 	form.set_widget(Button(text=var.controlButtonText), (1,1))	
 	form_response=form._exec()
-	print(form_response)
 	if form_response==var.testButtonText:
 		var.mainTest=1
 	else:
@@ -359,19 +360,6 @@ define inline_script ShowCountdown
 		items.execute(u'ShowCountdownSequence')
 	__end__
 	set _prepare ""
-
-define loop ShowCountdown1
-	set source_file ""
-	set source table
-	set repeat "[durationBreakSeconds]"
-	set order random
-	set description "Repeatedly runs another item"
-	set cycles 1
-	set continuous no
-	set break_if_on_first yes
-	set break_if "[restTime]<1"
-	setcycle 0 empty_column ""
-	run ""
 
 define sequence ShowCountdownSequence
 	set flush_keyboard yes
@@ -640,16 +628,6 @@ define inline_script calculateDuration
 	#note that exit condition is checked in run phase of this script
 	__end__
 
-define inline_script calculateOverhead
-	set description "Executes Python code"
-	___run__
-	if var.restTime>0:
-		var.previousPartOverhead=0
-	else:
-		var.previousPartOverhead=var.thisTime-var.maxDurationMins*60*1000
-	__end__
-	set _prepare ""
-
 define sequence experiment
 	set flush_keyboard yes
 	set description "Führt mehrere Items nacheinander aus"
@@ -858,16 +836,6 @@ define inline_script randomizeDuration
 	import random
 	var.randomDuration=random.randint(2000,5000)
 	__end__
-
-define inline_script roundTimeToSeconds
-	set description "Executes Python code"
-	___run__
-	#if var.restTime>1:
-	#	sleepTime=(var.thisTimeRound+1)*1000-var.thisTime
-	#	clock.sleep(sleepTime)
-	#sleeping for time==1 is done at start of next block (including preparation time)
-	__end__
-	set _prepare ""
 
 define inline_script setImages
 	set description "Executes Python code"
