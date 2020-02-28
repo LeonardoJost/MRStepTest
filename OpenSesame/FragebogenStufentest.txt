@@ -1,2 +1,2 @@
-﻿(Multiple)(0,1,2,3,4,5,6,7,8,9,10)(cRPE)Wie bewerten Sie die <b>kognitive</b> Anstrengung der Stufe?
-(Multiple)(0,1,2,3,4,5,6,7,8,9,10)(RPE)Wie bewerten Sie die <b>körperliche</b> Anstrengung der Stufe?
+﻿(MultipleNoAvoid)(0,1,2,3,4,5,6,7,8,9,10)(cRPE)Wie bewerten Sie die <b>kognitive</b> Anstrengung der Stufe?
+(MultipleNoAvoid)(0,1,2,3,4,5,6,7,8,9,10)(RPE)Wie bewerten Sie die <b>körperliche</b> Anstrengung der Stufe?

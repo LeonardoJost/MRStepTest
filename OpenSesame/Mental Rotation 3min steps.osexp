@@ -42,6 +42,7 @@ define sequence BlockSequence
 	run ReadInstructions always
 	run ShowInstructionsFixedDuration "[instructions]!=none"
 	run ParametersForBlock always
+	run ReadQuestionaireTxt always
 	run SubBlocks always
 
 define loop Blocks
@@ -50,55 +51,82 @@ define loop Blocks
 	set repeat 1
 	set order sequential
 	set description "Führt wiederholt ein anderes Item aus"
-	set cycles 3
+	set cycles 4
 	set continuous no
 	set break_if_on_first yes
 	set break_if never
-	setcycle 0 aaBlock practice
-	setcycle 0 instructions "InstructionsPractice.txt"
-	setcycle 0 questionaireFile "FragebogenStufentest.txt"
-	setcycle 0 maxDurationMins 1
-	setcycle 0 durationBreakSeconds 15
-	setcycle 0 feedbackDuration 1000
-	setcycle 0 feedback True
-	setcycle 0 numberOfSubBlocks 3
-	setcycle 1 aaBlock main
-	setcycle 1 instructions "Instructions.txt"
+	setcycle 0 aaBlock instructionsRPE
+	setcycle 0 instructions none
+	setcycle 0 questionaireFile "InstructionsASS.txt"
+	setcycle 0 maxDurationMins -1
+	setcycle 0 durationBreakSeconds 0
+	setcycle 0 feedbackDuration 0
+	setcycle 0 feedback False
+	setcycle 0 numberOfSubBlocks 1
+	setcycle 1 aaBlock practice
+	setcycle 1 instructions "InstructionsPractice.txt"
 	setcycle 1 questionaireFile "FragebogenStufentest.txt"
 	setcycle 1 maxDurationMins 1
 	setcycle 1 durationBreakSeconds 15
-	setcycle 1 feedbackDuration 500
-	setcycle 1 feedback False
-	setcycle 1 numberOfSubBlocks 20
-	setcycle 2 aaBlock questionaire
-	setcycle 2 instructions none
-	setcycle 2 questionaireFile "Fragebogen.txt"
-	setcycle 2 maxDurationMins -1
-	setcycle 2 durationBreakSeconds 0
-	setcycle 2 feedbackDuration 0
+	setcycle 1 feedbackDuration 1000
+	setcycle 1 feedback True
+	setcycle 1 numberOfSubBlocks 3
+	setcycle 2 aaBlock main
+	setcycle 2 instructions "Instructions.txt"
+	setcycle 2 questionaireFile "FragebogenStufentest.txt"
+	setcycle 2 maxDurationMins 1
+	setcycle 2 durationBreakSeconds 15
+	setcycle 2 feedbackDuration 500
 	setcycle 2 feedback False
-	setcycle 2 numberOfSubBlocks 1
+	setcycle 2 numberOfSubBlocks 20
+	setcycle 3 aaBlock questionaire
+	setcycle 3 instructions none
+	setcycle 3 questionaireFile "Fragebogen.txt"
+	setcycle 3 maxDurationMins -1
+	setcycle 3 durationBreakSeconds 0
+	setcycle 3 feedbackDuration 0
+	setcycle 3 feedback False
+	setcycle 3 numberOfSubBlocks 1
 	run BlockSequence
 
-define inline_script CreateID
+define inline_script CreateIDandSetTestControl
 	set description "Executes Python code"
 	___run__
-	if(var.customID==1):
-		#ask for ID
+	import os.path
+	fileExists=True
+	IDprompt=var.IDprompt
+	#repeat question for ID and test/control
+	while fileExists:
+		if(var.customID==1):
+			#ask for ID
+			#Create a form
+			form = Form(
+				cols=[1], rows=[2,1],
+				margins=(50,50,50,50), spacing=25
+			)
+			#show form with question and text input
+			form.set_widget(Label(text=IDprompt, center=False), (0,0))
+			textInput=TextInput(return_accepts=True, stub=u'ID')
+			form.set_widget(textInput, (0,1))
+			var.aaID=form._exec(textInput).upper()
+			#print(var.aaID)
+		else:
+			import time
+			var.aaID=time.time()
+		#ask if test or control
 		#Create a form
 		form = Form(
-			cols=[1], rows=[2,1],
+			cols=[1,1], rows=[2,1],
 			margins=(50,50,50,50), spacing=25
 		)
-		#show form with question and text input
-		form.set_widget(Label(text=var.IDprompt, center=False), (0,0))
-		textInput=TextInput(return_accepts=True, stub=u'ID')
-		form.set_widget(textInput, (0,1))
-		var.aaID=form._exec(textInput)
-		#print(var.aaID)
-	else:
-		import time
-		var.aaID=time.time()
+		#show form with question and two buttons
+		form.set_widget(Label(text=var.testControlQuestion, center=False), (0,0), colspan=2)
+		form.set_widget(Button(text=var.testButtonText), (0,1))
+		form.set_widget(Button(text=var.controlButtonText), (1,1))	
+		var.aaTestControl=form._exec()
+		#check if file already exists
+		fileExists=os.path.exists(exp.experiment_path+u'/Logfiles/ID-%s-%s.csv' % (var.aaID, str(var.aaTestControl)))
+		IDprompt=var.IDpromptFileExists
 	__end__
 	set _prepare ""
 
@@ -201,11 +229,6 @@ define inline_script ParametersForBlock
 	var.firstIndexOfBlock=var.stimulusNumber
 	#initial time
 	var.startTimeOfBlock=self.time()
-	#questionaire
-	import string
-	with open(pool[var.questionaireFile]) as file:
-		var.questionsText = file.readlines()
-	var.numberOfQuestions=len(var.questionsText)
 	__end__
 
 define inline_script ParametersForSubBlock
@@ -235,7 +258,7 @@ define sequence QuestionSequence
 	set description "Runs a number of items in sequence"
 	run prepareQuestion always
 	run ShowForm always
-	run questionaireLogger always
+	run questionaireLogger "[aaBlock]!=instructionsRPE"
 
 define sequence Questionaire
 	set flush_keyboard yes
@@ -261,7 +284,8 @@ define inline_script ReadInstructions
 	set _run ""
 	___prepare__
 	if var.instructions!=u'none':
-		if var.mainTest==0 and var.aaBlock==u'main':
+		#instructions for control vs test
+		if var.aaTestControl==var.controlButtonText and var.aaBlock==u'main':
 			var.instructions=var.instructions.split(u'.txt')[0]+u'Control.txt'
 		import string
 		with open(pool[var.instructions]) as file:
@@ -278,6 +302,21 @@ define inline_script ReadInstructions
 		var.instructionsText=var.instructionsText.replace(u'(Continue)',u'')
 	else:
 		var.instructionsText=u''
+		var.instructionsText1=u''
+	__end__
+
+define inline_script ReadQuestionaireTxt
+	set description "Executes Python code"
+	set _run ""
+	___prepare__
+	#read questionaire from file
+	#instructions for control vs test
+	if var.aaTestControl==var.controlButtonText and var.aaBlock==u'questionaire':
+		var.questionaireFile=var.questionaireFile.split(u'.txt')[0]+u'Control.txt'
+	import string
+	with open(pool[var.questionaireFile]) as file:
+		var.questionsText = file.readlines()
+	var.numberOfQuestions=len(var.questionsText)
 	__end__
 
 define inline_script ReadQuestions
@@ -295,7 +334,7 @@ define inline_script SetLogfile
 	set description "Executes Python code"
 	___run__
 	log.close()
-	log.open(exp.experiment_path+u'/Logfiles/ID-%s.csv' % var.aaID)
+	log.open(exp.experiment_path+u'/Logfiles/ID-%s-%s.csv' % (var.aaID, str(var.aaTestControl)))
 	#delete old (empty) log file
 	import os
 	try:
@@ -333,23 +372,7 @@ define inline_script SetNamesAndResponses
 
 define inline_script SetTestControl
 	set description "Executes Python code"
-	___run__
-	#ask if test or control
-	#Create a form
-	form = Form(
-		cols=[1,1], rows=[2,1],
-		margins=(50,50,50,50), spacing=25
-	)
-	#show form with question and two buttons
-	form.set_widget(Label(text=var.testControlQuestion, center=False), (0,0), colspan=2)
-	form.set_widget(Button(text=var.testButtonText), (0,1))
-	form.set_widget(Button(text=var.controlButtonText), (1,1))	
-	form_response=form._exec()
-	if form_response==var.testButtonText:
-		var.mainTest=1
-	else:
-		var.mainTest=0
-	__end__
+	set _run ""
 	set _prepare ""
 
 define inline_script ShowCountdown
@@ -387,7 +410,7 @@ define inline_script ShowForm
 		while(var.responseModified==u''):
 			# Create a form
 			form = Form(
-				cols=[1]*var.ncols, rows=[2,1],
+				cols=[1]*var.ncols, rows=[3,1],
 				margins=(50,100,50,100), spacing=25
 			)
 			#set widgets: question
@@ -404,7 +427,7 @@ define inline_script ShowForm
 				form.set_widget(Button(text=u'Ok', var=u'ok'), (3,1))
 				form.set_widget(Button(text=var.avoidQuestion), (4,1))		
 				form_response=form._exec(textInput)
-			elif var.questionType==u'Multiple':
+			elif var.questionType==u'Multiple' or var.questionType==u'MultipleNoAvoid':
 				for col in range(var.ncols):
 					form.set_widget(Button(text=var.thisQuestionOptions[col]), (col,1))		
 				form_response=form._exec()
@@ -507,8 +530,8 @@ define sequence ShowStimuliSequence
 	set description "Führt mehrere Items nacheinander aus"
 	run ShowInstructionsAtstart always
 	run setStartTime always
-	run ShowStimulus "[mainTest]=1 or [aaBlock]=practice"
-	run ShowRandomThings "[mainTest]=0 and [aaBlock]=main"
+	run ShowStimulus "[aaTestControl]=[testButtonText] or [aaBlock]=practice"
+	run ShowRandomThings "[aaTestControl]=[controlButtonText] and [aaBlock]=main"
 	run Feedback always
 	run calculateDuration always
 
@@ -634,8 +657,7 @@ define sequence experiment
 	run License always
 	run parameters always
 	run StimulusRandomization always
-	run CreateID always
-	run SetTestControl always
+	run CreateIDandSetTestControl always
 	run SetLogfile always
 	run Blocks always
 	run OnCallFunctions never
@@ -686,9 +708,10 @@ define inline_script parameters
 	### parameters
 	#should a custom ID be used? Otherwise date and time will be ID
 	#1 for true, 0 (or other) for false) #true is converted to yes, use 0/1 instead
-	var.customID=0
+	var.customID=1
 	#ID prompt (only necessary if customID is used)
-	var.IDprompt=u'Bitte ID eingeben und mit Enter bestätigen.'
+	var.IDprompt=u'Bitte Pseudonym eingeben und mit Enter bestätigen.\n\nPseudonym:\n1. Buchstabe des Vornamens der Mutter\n1. Buchstabe des Vornamens des Vaters\nersten zwei Ziffern des Geburtstags (mit Nullen)\nBsp. Paula, Erik, 03.05.1903 -> PE03'
+	var.IDpromptFileExists=u'Achtung: Datei existiert bereits als Logfile! \nBitte Logfile Verzeichnis überprüfen!\n\nBitte ID eingeben und mit Enter bestätigen.'
 	#test and control condition (question and answer buttons)
 	var.testControlQuestion=u'Test- oder Kontrollbedingung?'
 	var.testButtonText=u'Test'
@@ -754,7 +777,7 @@ define inline_script prepareQuestion
 		print(thisQuestionFull[:3])
 	var.questionType=thisQuestionType
 	#if questiontype is multiple -> get Options
-	if thisQuestionType=='Multiple':
+	if thisQuestionType==u'Multiple':
 		#get options in parenthenses
 		var.thisQuestionOptions=thisQuestionRest.split(u')')[0].split(u',')
 		#remove leading (
@@ -763,7 +786,16 @@ define inline_script prepareQuestion
 		var.thisQuestionOptions.append(var.avoidQuestion)
 		var.ncols=len(var.thisQuestionOptions)
 		thisQuestionRest=thisQuestionRest[len(thisQuestionRest.split(u')')[0])+1:]
-	elif thisQuestionType=='TextInput':
+		print(var.thisQuestionOptions)
+	elif thisQuestionType==u'MultipleNoAvoid': #no option to avoid question
+		#get options in parenthenses
+		var.thisQuestionOptions=thisQuestionRest.split(u')')[0].split(u',')
+		#remove leading (
+		var.thisQuestionOptions[0]=var.thisQuestionOptions[0][1:]
+		var.ncols=len(var.thisQuestionOptions)
+		thisQuestionRest=thisQuestionRest[len(thisQuestionRest.split(u')')[0])+1:]
+		print(var.thisQuestionOptions)
+	elif thisQuestionType==u'TextInput':
 		var.ncols=5
 	else:	
 		var.ncols=1
@@ -800,6 +832,7 @@ define inline_script prepareQuestion
 			print(u'no processing being added yet for ' + thisQuestionNext)
 	
 	var.thisQuestion=thisQuestionRest.replace(u'--',u'\n')
+	print(thisQuestionType)
 	__end__
 
 define logger questionaireLogger
@@ -810,6 +843,7 @@ define logger questionaireLogger
 	log aaID
 	log aaSubBlock
 	log aaBlockQuestion
+	log aaTestControl
 
 define mouse_response randomDurationMouseResponse
 	set timeout "[randomDuration]"
@@ -876,4 +910,5 @@ define logger stimulusLogger
 	log duration
 	log aaID
 	log aaSubBlock
+	log aaTestControl
 

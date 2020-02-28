@@ -14,4 +14,5 @@ Falls Sie während eines Blocks körperlich ausgelastet sind, drücken Sie die m
 um den Block vorzeitig zu beenden.
 
 (Continue)Drücken Sie die linke oder rechte Maustaste um zu starten.
-Es folgt zunächst ein Countdown von 5 Sekunden, dann kommen die Aufgaben.
+Es folgt zunächst ein Countdown von 5 Sekunden, dann kommen die Bilder.
+Fangen Sie während des Countdowns bereits an, auf dem Fahrrad zu treten.

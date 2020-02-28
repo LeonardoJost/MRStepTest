@@ -7,7 +7,7 @@ Falls es die linke Figur ist, drücken Sie die <b>linke Maustaste</b>.
 
 Falls es die rechte Figur ist, drücken Sie die <b>rechte Maustaste</b>.
 
-Antworten sie so schnell wie möglich, aber machen sie möglichst wenig Fehler.
+Antworten Sie so schnell wie möglich, aber machen Sie möglichst wenig Fehler.
 
 Die Aufgaben werden Ihnen in Blöcken von 3 Minuten präsentiert. 
 Sie erhalten kein Feedback mehr, stattdessen sehen Sie nach jeder Aufgabe ein
@@ -21,3 +21,4 @@ um den Block vorzeitig zu beenden.
 
 (Continue)Drücken Sie die linke oder rechte Maustaste um zu starten.
 Es folgt zunächst ein Countdown von 5 Sekunden, dann kommen die Aufgaben.
+Fangen Sie während des Countdowns bereits an, auf dem Fahrrad zu treten.
