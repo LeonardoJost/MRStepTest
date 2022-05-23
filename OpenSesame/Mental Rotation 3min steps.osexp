@@ -1,9 +1,9 @@
 ---
 API: 2.1
-OpenSesame: 3.2.8
+OpenSesame: 3.3.10
 Platform: nt
 ---
-set width 1680
+set width 1920
 set uniform_coordinates yes
 set title "Mental Rotation as Steptest"
 set subject_parity even
@@ -17,7 +17,7 @@ set sampler_backend legacy
 set round_decimals 2
 set mouse_backend legacy
 set keyboard_backend legacy
-set height 1050
+set height 1080
 set fullscreen no
 set form_clicks no
 set foreground white
@@ -26,7 +26,7 @@ set font_size 24
 set font_italic no
 set font_family sans
 set font_bold no
-set experiment_path "C:\\Users\\LocalAdmin\\Documents\\Programmierung\\R\\MRStepTest\\OpenSesame"
+set experiment_path "C:\\Users\\LocalAdmin\\Documents\\GitHub\\MRStepTest\\OpenSesame"
 set disable_garbage_collection yes
 set description "The main experiment item"
 set coordinates uniform
@@ -106,9 +106,9 @@ define inline_script CreateIDandSetTestControl
 			)
 			#show form with question and text input
 			form.set_widget(Label(text=IDprompt, center=False), (0,0))
-			textInput=TextInput(return_accepts=True, stub=u'ID')
+			textInput=TextInput(return_accepts=True, stub=u'ID', var=u'aaID')
 			form.set_widget(textInput, (0,1))
-			var.aaID=form._exec(textInput).upper()
+			form._exec()
 			#print(var.aaID)
 		else:
 			import time
@@ -152,19 +152,19 @@ define sketchpad FeedbackCorrect
 	set duration 0
 	set description "Präsentiert Stimuli"
 	draw textline center=1 color=white font_bold=no font_family=sans font_italic=no font_size=40 html=yes show_if=always text="[feedbackCorrect]" x=0 y=0 z_index=0
-	draw textline center=1 color=white font_bold=no font_family=sans font_italic=no font_size=40 html=yes show_if=always text="[formatTime]" x=0 y=-300 z_index=0
+	draw textline center=1 color=white font_bold=no font_family=sans font_italic=no font_size=40 html=yes show_if=always text="[formatTime]" x=0 y=-400 z_index=0
 
 define sketchpad FeedbackWrong
 	set duration 0
 	set description "Präsentiert Stimuli"
 	draw textline center=1 color=white font_bold=no font_family=sans font_italic=no font_size=40 html=yes show_if=always text="[feedbackWrong]" x=0 y=0 z_index=0
-	draw textline center=1 color=white font_bold=no font_family=sans font_italic=no font_size=40 html=yes show_if=always text="[formatTime]" x=0 y=-300 z_index=0
+	draw textline center=1 color=white font_bold=no font_family=sans font_italic=no font_size=40 html=yes show_if=always text="[formatTime]" x=0 y=-400 z_index=0
 
 define sketchpad Fixation
 	set duration 0
 	set description "Präsentiert Stimuli"
 	draw textline center=1 color=white font_bold=no font_family=sans font_italic=no font_size=40 html=yes show_if=always text="[fixation]" x=0 y=0 z_index=0
-	draw textline center=1 color=white font_bold=no font_family=sans font_italic=no font_size=40 html=yes show_if=always text="[formatTime]" x=0 y=-300 z_index=0
+	draw textline center=1 color=white font_bold=no font_family=sans font_italic=no font_size=40 html=yes show_if=always text="[formatTime]" x=0 y=-400 z_index=0
 
 define inline_script GetTime
 	set description "Executes Python code"
@@ -258,6 +258,7 @@ define sequence QuestionSequence
 	set description "Runs a number of items in sequence"
 	run prepareQuestion always
 	run ShowForm always
+	run mouseShow always
 	run questionaireLogger "[aaBlock]!=instructionsRPE"
 
 define sequence Questionaire
@@ -287,17 +288,16 @@ define inline_script ReadInstructions
 		#instructions for control vs test
 		if var.aaTestControl==var.controlButtonText and var.aaBlock==u'main':
 			var.instructions=var.instructions.split(u'.txt')[0]+u'Control.txt'
-		import string
-		with open(pool[var.instructions]) as file:
+		with open(pool[var.instructions],encoding="utf-8-sig") as file:
 			instructionsText = file.read()
-		var.instructionsText=instructionsText.decode(u'UTF-8-sig').replace(u'F1',var.feedbackCorrect).replace(u'F2',var.feedbackWrong).replace(u'FX',var.fixation)
+		var.instructionsText=instructionsText.replace(u'F1',var.feedbackCorrect).replace(u'F2',var.feedbackWrong).replace(u'FX',var.fixation)
 		var.instructionsText1=var.instructionsText.split(u'(Continue)')[0]
 		#replace part after (Continue) by empty lines to keep spacing/positioning
 		#empty lines are trimmed rigorously (even non-breaking spaces) so dots are displyed
 		#pixelwise positioning of text is another option but difficult as converting fontsize to px is not uniform
 		if len(var.instructionsText.split(u'(Continue)'))>1:
-			continueLines=var.instructionsText.split(u'(Continue)')[1].count(u'\n')+1
-			var.instructionsText1+=u'.\n'*continueLines
+			continueLines=var.instructionsText.split(u'(Continue)')[1].count(u'\n')
+			var.instructionsText1+=u'<span style="color:rgba(0,0,0,.01)">.</span>\n'*continueLines
 		#remove (Continue)
 		var.instructionsText=var.instructionsText.replace(u'(Continue)',u'')
 	else:
@@ -313,8 +313,7 @@ define inline_script ReadQuestionaireTxt
 	#instructions for control vs test
 	if var.aaTestControl==var.controlButtonText and var.aaBlock==u'questionaire':
 		var.questionaireFile=var.questionaireFile.split(u'.txt')[0]+u'Control.txt'
-	import string
-	with open(pool[var.questionaireFile]) as file:
+	with open(pool[var.questionaireFile],encoding="utf-8-sig") as file:
 		var.questionsText = file.readlines()
 	var.numberOfQuestions=len(var.questionsText)
 	__end__
@@ -370,11 +369,6 @@ define inline_script SetNamesAndResponses
 		var.correct_response=3
 	__end__
 
-define inline_script SetTestControl
-	set description "Executes Python code"
-	set _run ""
-	set _prepare ""
-
 define inline_script ShowCountdown
 	set description "Executes Python code"
 	___run__
@@ -411,10 +405,11 @@ define inline_script ShowForm
 			# Create a form
 			form = Form(
 				cols=[1]*var.ncols, rows=[3,1],
-				margins=(50,100,50,100), spacing=25
+				margins=(10,10,10,10), spacing=25
 			)
 			#set widgets: question
 			form.set_widget(Label(text=var.thisQuestion, center=False), (0,0), colspan=var.ncols)
+			#add RPEscale for RPE questions
 			if u'RPE' in var.thisQuestionID:
 				image = ImageWidget(path=pool[u'ASS.png'], adjust=False, frame=False)
 				form.set_widget(image, (0, 0), colspan=var.ncols)
@@ -425,8 +420,9 @@ define inline_script ShowForm
 				form.set_widget(textInput, (0,1), colspan=3)
 				#add button to avoid answering
 				form.set_widget(Button(text=u'Ok', var=u'ok'), (3,1))
-				form.set_widget(Button(text=var.avoidQuestion), (4,1))		
-				form_response=form._exec(textInput)
+				if var.avoidQuestionsPossible==1:
+					form.set_widget(Button(text=var.avoidQuestion), (4,1))		
+				form_response=form._exec()
 			elif var.questionType==u'Multiple' or var.questionType==u'MultipleNoAvoid':
 				for col in range(var.ncols):
 					form.set_widget(Button(text=var.thisQuestionOptions[col]), (col,1))		
@@ -434,7 +430,11 @@ define inline_script ShowForm
 			elif var.questionType==u'ManualCode':
 				textInput=TextInput(return_accepts=True, stub=u'', var=u'qAnswer')
 				form.set_widget(textInput, (0,1))	
-				form_response=form._exec(textInput)
+				form_response=form._exec()
+			elif var.questionType==u'NecessaryCheckbox':
+				form.set_widget(Checkbox(text=var.thisQuestionID, var=u'qAnswer'),(0,1),colspan=3)
+				form.set_widget(Button(text=u'Ok'), (3,1))
+				form_response=form._exec()
 			else: #default is ShowText to avoid problems with first index
 				form.set_widget(Button(text=u'Ok'), (0,1))
 				form_response=form._exec()
@@ -442,7 +442,12 @@ define inline_script ShowForm
 			#get text answer from textinput if text is approved by button
 			if var.questionType==u'TextInput' and not form_response==var.avoidQuestion:
 				var.responseModified=var.qAnswer
+			#get if required manual code was entered
 			elif var.questionType==u'ManualCode' and not var.qAnswer==var.thisQuestionID:
+				var.responseModified=u''
+				var.questionAppend=u''
+			#get if checkbox was checked
+			elif var.questionType==u'NecessaryCheckbox' and var.qAnswer==u'no':
 				var.responseModified=u''
 				var.questionAppend=u''
 			else: 
@@ -552,10 +557,10 @@ define sketchpad Stimulus
 	# draw textline center=1 color=white font_bold=no font_family=sans font_italic=no font_size=40 html=yes show_if=always text="[endTime]" x=0 y=0 z_index=0
 	set duration 0
 	set description "Präsentiert Stimuli"
-	draw image center=1 file="[modelLeftFile]" scale=1 show_if=always x=-300 y=-150 z_index=0
-	draw image center=1 file="[modelRightFile]" scale=1 show_if=always x=300 y=-150 z_index=0
-	draw image center=1 file="[stimulusFile]" scale=1 show_if=always x=0 y=150 z_index=0
-	draw textline center=1 color=white font_bold=no font_family=sans font_italic=no font_size=40 html=yes show_if=always text="[formatTime]" x=0 y=-300 z_index=0
+	draw image center=1 file="[modelLeftFile]" scale=1 show_if=always x=-500 y=-200 z_index=0
+	draw image center=1 file="[modelRightFile]" scale=1 show_if=always x=500 y=-200 z_index=0
+	draw image center=1 file="[stimulusFile]" scale=1 show_if=always x=0 y=200 z_index=0
+	draw textline center=1 color=white font_bold=no font_family=sans font_italic=no font_size=40 html=yes show_if=always text="[formatTime]" x=0 y=-400 z_index=0
 
 define inline_script StimulusRandomization
 	set description "Executes Python code"
@@ -701,6 +706,15 @@ define mouse_response mouseResponse
 	set description "Sammelt Mausreaktionen"
 	set allowed_responses "1;2;3"
 
+define inline_script mouseShow
+	set description "Führt Python Code aus"
+	___run__
+	#show mouse and prevent returning to center
+	my_mouse = Mouse()
+	my_mouse.show_cursor(show=True)
+	__end__
+	set _prepare ""
+
 define inline_script parameters
 	set description "Executes Python code"
 	set _run ""
@@ -729,6 +743,7 @@ define inline_script parameters
 	var.instructionFontSize=18
 	##questionaire: 
 	#option to avoid question
+	var.avoidQuestionsPossible=0
 	var.avoidQuestion=u'keine Angabe'
 	#file containing questions
 	var.questionaireFile=u'Fragebogen.txt'
@@ -740,11 +755,10 @@ define inline_script parameters
 	#stimulus parameters
 	var.minOverlap=20 #minimal number of stimuli at start and end of random lists, that are not the same (should be at least 0 and well below total number of stimuli divided by 2 otherwise endless looping)
 	#array of model numbers
-	numberOfModels=16
-	var.models=list(range(1,numberOfModels+1))
+	var.models=list(range(2,9))+list(range(12,17))
 	#angles of rotation
 	angleDiff=45
-	minAngle=0
+	minAngle=45
 	maxAngle=360
 	var.angles=list(range(minAngle,maxAngle,angleDiff))
 	#orientations
@@ -760,7 +774,7 @@ define inline_script prepareQuestion
 	set _run ""
 	___prepare__
 	#get this question
-	thisQuestionFull=var.questionsText[var.questionNumber].decode(u'UTF-8-sig')
+	thisQuestionFull=var.questionsText[var.questionNumber]
 	var.questionNumber=var.questionNumber+1
 	#prepare
 	var.showQuestion=1
@@ -858,10 +872,10 @@ define mouse_response randomDurationMouseResponse
 define sketchpad randomStimulus
 	set duration 0
 	set description "Präsentiert Stimuli"
-	draw image center=1 file="[modelLeftFile]" scale=1 show_if=always x=-300 y=-150 z_index=0
-	draw image center=1 file="[modelRightFile]" scale=1 show_if=always x=300 y=-150 z_index=0
-	draw image center=1 file="[stimulusFile]" scale=1 show_if=always x=0 y=150 z_index=0
-	draw textline center=1 color=white font_bold=no font_family=sans font_italic=no font_size=40 html=yes show_if=always text="[formatTime]" x=0 y=-300 z_index=0
+	draw image center=1 file="[modelLeftFile]" scale=1 show_if=always x=-500 y=-200 z_index=0
+	draw image center=1 file="[modelRightFile]" scale=1 show_if=always x=500 y=-200 z_index=0
+	draw image center=1 file="[stimulusFile]" scale=1 show_if=always x=0 y=200 z_index=0
+	draw textline center=1 color=white font_bold=no font_family=sans font_italic=no font_size=40 html=yes show_if=always text="[formatTime]" x=0 y=-400 z_index=0
 
 define inline_script randomizeDuration
 	set description "Executes Python code"
