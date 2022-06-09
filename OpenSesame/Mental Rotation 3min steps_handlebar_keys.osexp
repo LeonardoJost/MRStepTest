@@ -680,6 +680,7 @@ define sequence experiment
 	run License always
 	run parameters always
 	run StimulusRandomization always
+	run new_form_consent always
 	run CreateIDandSetTestControl always
 	run SetLogfile always
 	run Blocks always
@@ -724,6 +725,34 @@ define inline_script mouseShow
 	my_mouse.show_cursor(show=True)
 	__end__
 	set _prepare ""
+
+define form_consent new_form_consent
+	set timeout infinite
+	set spacing 10
+	set rows "1;4;1;1"
+	set only_render no
+	set margins "50;50;50;50"
+	set form_title "Einverständniserklärung"
+	__form_text__
+	Hiermit willige ich ein, dass ich an der Studie „Mentale Rotation und Ausdauer“ teilnehme, bei der ich zwei ausbelastende Stufentests durchführen und mentale Rotationsaufgaben am PC lösen werden.
+	
+	Ich erkläre mich damit einverstanden, dass im Rahmen dieser Studie personenbezogene Daten/ Angaben, die mich betreffen durch den Versuchsleiter verschlüsselt erhoben (pseudonymisiert), auf elektronischen Datenträgern aufgezeichnet und weiterverarbeitet werden. Ich bin auch damit einverstanden, dass die Studienergebnisse in nicht rückentschlüsselbarer (anonymer) Form, die keinen Rückschluss auf mich zulassen, veröffentlicht werden.
+	
+	Mir ist bekannt, dass ich meine Einwilligung jederzeit ohne Angaben von Gründen und ohne nachteilige Folgen für mich zurückziehen und einer Weiterverarbeitung dieser Daten jederzeit widersprechen und ihre Löschung bzw. Vernichtung verlangen kann.
+	__end__
+	set description "A simple consent form"
+	set decline_text "Ich bin nicht einverstanden."
+	set decline_message "Um an dem Experiment teilzunehmen, müssen Sie einverstanden sein."
+	set cols "2;2"
+	set checkbox_text "Ich habe die Informationen gelesen und verstanden."
+	set accept_text "Ich bin einverstanden und möchte am Experiment teilnehmen."
+	set _theme gray
+	widget 0 0 2 1 label text="[form_title]"
+	widget 0 1 2 1 label center=no text="[form_text]"
+	widget 0 2 2 1 checkbox text="[checkbox_text]" var=checkbox_status
+	widget 0 3 1 1 button text="[accept_text]" var=accept_status
+	widget 1 3 1 1 button text="[decline_text]"
+
 
 define inline_script parameters
 	set description "Executes Python code"
