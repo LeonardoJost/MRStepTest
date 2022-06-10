@@ -1,6 +1,6 @@
 ---
 API: 2.1
-OpenSesame: 3.3.10
+OpenSesame: 3.3.12
 Platform: nt
 ---
 set width 1920
@@ -94,10 +94,10 @@ define inline_script CreateIDandSetTestControl
 	set description "Executes Python code"
 	___run__
 	import os.path
-	fileExists=True
-	IDprompt=var.IDprompt
-	#repeat question for ID and test/control
-	while fileExists:
+	questionIDandCondition=u'Zurück'
+	#repeat question for ID and test/control until continue button is pressed
+	while questionIDandCondition==u'Zurück':
+		#ask for custom ID
 		if(var.customID==1):
 			#ask for ID
 			#Create a form
@@ -106,7 +106,7 @@ define inline_script CreateIDandSetTestControl
 				margins=(50,50,50,50), spacing=25
 			)
 			#show form with question and text input
-			form.set_widget(Label(text=IDprompt, center=False), (0,0))
+			form.set_widget(Label(text=var.IDprompt, center=False), (0,0))
 			textInput=TextInput(return_accepts=True, stub=u'ID', var=u'aaID')
 			form.set_widget(textInput, (0,1))
 			form._exec()
@@ -114,20 +114,44 @@ define inline_script CreateIDandSetTestControl
 		else:
 			import time
 			var.aaID=time.time()
-		#ask if test or control
+		#check if file for test already exists
+		fileExistsTest=os.path.exists(exp.experiment_path+u'/Logfiles/ID-%s-%s.csv' % (var.aaID,var.testName))
+		#check if file for control already exists
+		fileExistsControl=os.path.exists(exp.experiment_path+u'/Logfiles/ID-%s-%s.csv' % (var.aaID,var.controlName))
 		#Create a form
 		form = Form(
 			cols=[1,1], rows=[2,1],
 			margins=(50,50,50,50), spacing=25
 		)
-		#show form with question and two buttons
-		form.set_widget(Label(text=var.testControlQuestion, center=False), (0,0), colspan=2)
-		form.set_widget(Button(text=var.testButtonText), (0,1))
-		form.set_widget(Button(text=var.controlButtonText), (1,1))	
-		var.aaTestControl=form._exec()
-		#check if file already exists
-		fileExists=os.path.exists(exp.experiment_path+u'/Logfiles/ID-%s-%s.csv' % (var.aaID, str(var.aaTestControl)))
-		IDprompt=var.IDpromptFileExists
+		#inform about existing conditions and set buttons (no continue button if two measurements already exist)
+		if fileExistsTest:
+			if fileExistsControl:
+				#both files already exist -> new ID?
+				label=u'Achtung: Zu diesem Pseudonym existieren bereits zwei Messungen!\nBitte Logfileverzeichnis überprüfen und gegebenenfalls neues Pseudonym auswählen!'
+				form.set_widget(Button(text=u'Zurück'), (0,1))	
+			else:
+				#test condition already exists -> now control
+				label=u'Zu diesem Pseudonym existiert bereits eine Messung zum Stufentest mit mentaler Rotation. Nun folgt die Kontrollbedingung.\n\nFalls dies nicht korrekt ist, informieren Sie bitte die/den Versuchsleiter/in!'
+				var.aaTestControl=var.controlName
+				form.set_widget(Button(text=u'Weiter'), (0,1))
+				form.set_widget(Button(text=u'Zurück'), (1,1))	
+		elif fileExistsControl:
+			#control already exists -> now test
+			label=u'Zu diesem Pseudonym existiert bereits eine Messung zur Kontrollbedingung. Nun folgt der Stufentest mit mentaler Rotation.\n\nFalls dies nicht korrekt ist, informieren Sie bitte die/den Versuchsleiter/in!'
+			var.aaTestControl=var.testName
+			form.set_widget(Button(text=u'Weiter'), (0,1))
+			form.set_widget(Button(text=u'Zurück'), (1,1))	
+		else:
+			#no conditions yet -> choose randomly
+			testControlArray=[var.testName,var.controlName]
+			random.shuffle(testControlArray)
+			var.aaTestControl=testControlArray[0]
+			label=u'Zu diesem Pseudonym existieren noch keine Messungen. Ihr zufällig ausgewählter Test heute ist die %sbedingung.\n\nFalls dies nicht korrekt ist, informieren Sie bitte die/den Versuchsleiter/in!'	% (var.aaTestControl)
+			form.set_widget(Button(text=u'Weiter'), (0,1))
+			form.set_widget(Button(text=u'Zurück'), (1,1))	
+		#show form with question and buttons
+		form.set_widget(Label(text=label, center=False), (0,0), colspan=2)
+		questionIDandCondition=form._exec()
 	__end__
 	set _prepare ""
 
@@ -294,7 +318,7 @@ define inline_script ReadInstructions
 	___prepare__
 	if var.instructions!=u'none':
 		#instructions for control vs test
-		if var.aaTestControl==var.controlButtonText and var.aaBlock==u'main':
+		if var.aaTestControl==var.controlName and var.aaBlock==u'main':
 			var.instructions=var.instructions.split(u'.txt')[0]+u'Control.txt'
 		with open(pool[var.instructions],encoding="utf-8-sig") as file:
 			instructionsText = file.read()
@@ -319,7 +343,7 @@ define inline_script ReadQuestionaireTxt
 	___prepare__
 	#read questionaire from file
 	#instructions for control vs test
-	if var.aaTestControl==var.controlButtonText and var.aaBlock==u'questionaire':
+	if var.aaTestControl==var.controlName and var.aaBlock==u'questionaire':
 		var.questionaireFile=var.questionaireFile.split(u'.txt')[0]+u'Control.txt'
 	with open(pool[var.questionaireFile],encoding="utf-8-sig") as file:
 		var.questionsText = file.readlines()
@@ -547,8 +571,8 @@ define sequence ShowStimuliSequence
 	set description "Führt mehrere Items nacheinander aus"
 	run ShowInstructionsAtstart always
 	run setStartTime always
-	run ShowStimulus "[aaTestControl]=[testButtonText] or [aaBlock]=practice"
-	run ShowRandomThings "[aaTestControl]=[controlButtonText] and [aaBlock]=main"
+	run ShowStimulus "[aaTestControl]=[testName] or [aaBlock]=practice"
+	run ShowRandomThings "[aaTestControl]=[controlName] and [aaBlock]=main"
 	run Feedback always
 	run calculateDuration always
 
@@ -767,8 +791,8 @@ define inline_script parameters
 	var.IDpromptFileExists=u'Achtung: Datei existiert bereits als Logfile! \nBitte Logfile Verzeichnis überprüfen!\n\nBitte ID eingeben und mit Enter bestätigen.'
 	#test and control condition (question and answer buttons)
 	var.testControlQuestion=u'Test- oder Kontrollbedingung?'
-	var.testButtonText=u'Test'
-	var.controlButtonText=u'Kontroll'
+	var.testName=u'Test'
+	var.controlName=u'Kontroll'
 	##feedback/fixation (fixation is automatically chosen if no feedback is given)
 	#also used to replace placeholders in instructions
 	var.feedbackCorrect=u'✓'
