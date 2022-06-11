@@ -220,6 +220,14 @@ define keyboard_response Key_response
 	set description "Sammelt Tastaturantworten"
 	set allowed_responses "left;right;x"
 
+define keyboard_response Key_response_1
+	set timeout "[randomDuration]"
+	set flush yes
+	set event_type keypress
+	set duration keypress
+	set description "Sammelt Tastaturantworten"
+	set allowed_responses x
+
 define notepad License
 	__note__
 	### Mental Rotation experiment in blocks of 3 minutes
@@ -552,6 +560,8 @@ define sequence ShowRandomThings
 	run randomizeDuration always
 	run setImages always
 	run randomStimulus always
+	run Key_response_1 always
+	run stimulusLogger always
 
 define loop ShowStimuli
 	set source_file ""
@@ -922,7 +932,7 @@ define logger questionaireLogger
 	log aaTestControl
 
 define sketchpad randomStimulus
-	set duration "[randomDuration]"
+	set duration 0
 	set description "Präsentiert Stimuli"
 	draw image center=1 file="[modelLeftFile]" scale=1 show_if=always x=-500 y=-200 z_index=0
 	draw image center=1 file="[modelRightFile]" scale=1 show_if=always x=500 y=-200 z_index=0
