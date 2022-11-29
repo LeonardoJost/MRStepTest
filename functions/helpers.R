@@ -1,5 +1,5 @@
 ### Supporting functions, which fit no category
-#     Copyright (C) 2019  Leonardo Jost
+#     Copyright (C) 2022  Leonardo Jost
 # 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -14,10 +14,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-#get filenames in folder, containing muster and ending with endung
-getFileNames=function(folder,muster,endung) {
+#get filenames in folder, containing pattern and ending with endung
+getFileNames=function(folder,pattern,endung) {
   fileNames=as.list(dir(path=folder,
-                        pattern = paste(muster,"\\.",endung,"$",sep="")))
+                        pattern = paste(pattern,".*\\.",endung,"$",sep="")))
   return(fileNames)
 }
 
@@ -45,6 +45,7 @@ toChar=function(vec) {
 #if ranges are entered using "-" (e.g. 1-2), return mean
 stringToNum=function(vec){
   vec=toChar(vec)
+  vec=gsub("min","/60",vec)
   vec=gsub("[[:alpha:]]+", "", vec)
   vec=gsub(",",".",vec)
   for (i in 1:length(vec)) {
@@ -52,8 +53,41 @@ stringToNum=function(vec){
       temp=unlist(strsplit(paste(vec[i]),split='-'))
       vec[i]=(as.numeric(temp[1])+as.numeric(temp[2]))/2
     }
+    if (grepl("/",paste(vec[i]))) {
+      temp=unlist(strsplit(paste(vec[i]),split='/'))
+      vec[i]=as.numeric(temp[1])/as.numeric(temp[2])
+    }
   }
+  vec=gsub("\\D+", "", vec)
   return(as.numeric(vec))
+}
+
+stringToNumArray=function(vec){
+  #remove brackets
+  vec=gsub("\\[|\\]", "",vec)
+  #split by commas
+  vec=strsplit(vec,", ")
+  vec=lapply(vec, function(x) as.numeric(unlist(x)))
+  return(vec)
+}
+
+minsToSeconds=function(vec){
+  #convert : to decimal point
+  vec=as.numeric(gsub(":",".",vec))
+  #get minutes and seconds
+  mins=floor(vec)
+  secs=(vec-mins)*100
+  #convert to seconds
+  return(60*mins+secs)
+}
+
+stringToCharArray=function(vec){
+  #remove brackets
+  vec=gsub("\\[|\\]", "",vec)
+  #split by commas
+  vec=strsplit(vec,", ")
+  vec=lapply(vec, function(x) as.character(unlist(x)))
+  return(vec)
 }
 
 #remove digits from string, trim to length set by trim
@@ -68,17 +102,33 @@ meanMode=function(vec,narm=TRUE,digitsFormat=4) {
   if(is.factor(vec)){
     vec=levels(vec)[vec]
   }
+  if(sum(is.na(vec))==length(vec)){
+    return("")
+  }
   if(is.numeric(vec))
     return(meanSd(vec,narm,digitsFormat))
   else
-    return(modes(vec))
+    return(modesString(vec))
+}
+#return mode (most occuring element), in case of conflict, return first occuring
+mode = function(vec) {
+  uniques = unique(vec)
+  return(uniques[which.max(tabulate(match(vec, uniques)))])
 }
 
-#return modes as string in decreasing order
+#return all elements and number of occurences
 modes = function(vec) {
+  #unlist in case of character arrays marked by []
+  if(any(grepl("\\[|\\]",vec))){
+    vec=unlist(stringToCharArray(vec))
+  }
   dat=as.data.frame(table(vec))
-  dat=dat[order(dat$Freq,decreasing=TRUE),]
-  paste(paste(dat$vec,dat$Freq,sep=":"),collapse=",")
+  return(dat[order(dat$Freq, as.numeric(row.names(dat)),decreasing=TRUE),])
+}
+#return modes as string in decreasing order
+modesString=function(vec) {
+  dat=modes(vec)
+  return(paste(paste(dat$vec,dat$Freq,sep=":"),collapse=","))
 }
 #return mean(sd) as string
 meanSd=function(vec,narm=TRUE,digitsFormat=4) {
@@ -117,17 +167,25 @@ getHandedness=function(verbose,dat,startIndex, numberOfCriteria) {
 
 #clean questionaire Data
 cleanData=function(dat,toFirstChars,toNums,cleanWhiteSpaces) {
-  for(toFirstChar in toFirstChars)
-  {
+  for(toFirstChar in toFirstChars){
     dat[,toFirstChar]=substr(toChar(dat[,toFirstChar]),1,1)
   }
-  for(toNum in toNums)
-  {
+  for(toNum in toNums){
     dat[,toNum]=stringToNum(dat[,toNum])
   }
-  for(cleanWhiteSpace in cleanWhiteSpaces)
-  {
+  for(cleanWhiteSpace in cleanWhiteSpaces){
     dat[,cleanWhiteSpace]=trimws(dat[,cleanWhiteSpace])
   }
   return(dat)
 }
+
+#calculate log odds from accuracy
+toLogOdds=function(acc){
+  return(log(acc/(1-acc)))
+}
+
+#calculate acurracy from log odds
+toAcc=function(logOdds){
+  return(exp(logOdds)/(1+exp(logOdds)))
+}
+

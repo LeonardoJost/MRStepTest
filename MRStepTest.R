@@ -1,5 +1,5 @@
-### main program
-#     Copyright (C) 2019  Leonardo Jost
+### main script
+#     Copyright (C) 2022  Leonardo Jost
 # 
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -22,60 +22,49 @@ source("functions/generateGraphsAndTables.R", encoding="utf-8")
 dir.create("figs")
 dir.create("output")
 dir.create("figs/MR")
-dir.create("figs/MR/allData")
-dir.create("figs/MR/meanData")
-dir.create("figs/MR/Timed/")
-dir.create("figs/MR/accData/")
 
 ##options, parameters
 options(digits=6)
+software=("OpenSesame") #OSWeb or OpenSesame (classic)
 #set data folder
-folder="data\\"
-verbose=2 #detail of output
-experimentalSoftware="OpenSesame" #"OpenSesame" or "Presentation"
-questionaireOutFile="output\\questionaire" #.csv added at end, leave empty if no output desired
-handednessGraphFile="figs\\HandednessMW.png" #leave empty if no output desired
+osLogfiles="logfiles\\osLogfiles\\"
+physLogfiles="logfiles\\physLogfiles\\"
+verbose=3 #detail of output
+questionnaireOutFile="output\\questionnaire" #.csv added at end, leave empty if no output desired
 outlierFactor=3 #factor of sd to define outliers in MR
-block="main"#name of intersting block of data
-questionaireDataCols=c("ID","Gender","MRexperience") #which questionaire columns shall be kept for statistical analysis
+block=c("main")#name of interesting block of data
+questionnaireDataCols=c("ID","Gender","Experience","Weight") #which questionaire columns shall be kept for statistical analysis
 
 ##read and write data
 #read data
-questionaireData=getQuestionaireData(experimentalSoftware,verbose,folder)
-MRData=getMRData(experimentalSoftware,verbose,folder,block)
-#modify data #adapt to own data
-questionaireData=modifyQuestionaireData(experimentalSoftware,questionaireData)
-MRData=modifyMRData(experimentalSoftware,verbose,MRData,outlierFactor)
+questionnaireData=getQuestionnaireData(software,verbose,osLogfiles)
+questionnaireDataRPE=getRPEQuestionnaireData(software,verbose,osLogfiles)
+MRData=getMRData(software,verbose,osLogfiles,block)
+physData=getPhysData(verbose,physLogfiles)
+#modify data 
+questionnaireData=modifyQuestionnaireData(questionnaireData,c("Gender"),c("Age","Weight"),c())
+MRData=modifyMRData(verbose,MRData,outlierFactor)
+questionnaireDataRPE=modifyQuestionnaireDataRPE(questionnaireDataRPE)
 #calculate means from questionaire (and save to csv)
-calculateMeansQuestionaire(verbose,questionaireData,questionaireOutFile,handednessGraphFile)
+calculateMeansQuestionnaire(verbose,questionnaireData,questionnaireOutFile,"")
 #remove not analyzed questionaire data to protect participant identity
-questionaireData=subset(questionaireData,select=questionaireDataCols)
+questionnaireData=subset(questionnaireData,select=questionnaireDataCols)
+#merge questionnaireData with physData
+physData=merge(physData,questionnaireData,by="ID")
+#merge physData also with RPE data
+physData=merge(physData,questionnaireDataRPE,by=c("ID","condition","step"))
+#modify physData (gender and weight needed)
+physData=modifyPhysData(verbose,physData)
 #unify data
-dataset=merge(MRData,questionaireData,by="ID")
+datasetMR=merge(MRData,physData[physData$condition=="test",c("ID","step","outlierPhys","relativeResistance")],by=c("ID","step"))
+datasetPhys=physData
+
 #anonymise IDs to protect participant identity
-dataset$ID=as.factor(dataset$ID)
-levels(dataset$ID)=paste("id",sample.int(length(levels(dataset$ID))),sep="")
+datasetMR$ID=as.factor(datasetMR$ID)
+levels(datasetMR$ID)=paste("id",sample.int(length(levels(datasetMR$ID))),sep="")
+datasetPhys$ID=as.factor(datasetPhys$ID)
+levels(datasetPhys$ID)=paste("id",sample.int(length(levels(datasetPhys$ID))),sep="")
 
 #save full dataset to csv
-write.table(dataset,file="output\\dataset.csv",sep=";", col.names=NA)
-
-##plot reaction time and accuracy by interesting conditions
-#rename interesting variable to cond and generate plots
-dataset$cond=dataset$correctSide
-generateTableAndGraphsForCondition(dataset,"side")
-dataset$cond=paste(dataset$correctSide,dataset$axis,sep="*")
-generateTableAndGraphsForCondition(dataset,"sideXaxis")
-dataset$cond=paste(dataset$correctSide,dataset$orientation,sep="*")
-generateTableAndGraphsForCondition(dataset,"sideXmirror")
-dataset$cond=dataset$model
-generateTableAndGraphsForCondition(dataset,"modelNumber")
-dataset$cond=as.factor(dataset$deg)
-generateTableAndGraphsForCondition(dataset,"deg",FALSE)
-dataset$cond=paste(dataset$deg,dataset$correctSide,sep="*")
-generateTableAndGraphsForCondition(dataset,"degXside",FALSE)
-dataset$cond=dataset$direction
-generateTableAndGraphsForCondition(dataset,"direction")
-dataset$cond=paste(dataset$direction,dataset$axis,sep="*")
-generateTableAndGraphsForCondition(dataset,"directionXaxis")
-
-
+write.table(datasetMR,file="output\\datasetMR",sep=";", row.names = F)
+write.table(datasetPhys,file="output\\datasetPhys",sep=";", row.names = F)
