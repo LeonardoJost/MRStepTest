@@ -63,8 +63,8 @@ datasetPhys=physData
 datasetMR$ID=as.factor(datasetMR$ID)
 levels(datasetMR$ID)=paste("id",sample.int(length(levels(datasetMR$ID))),sep="")
 datasetPhys$ID=as.factor(datasetPhys$ID)
-levels(datasetPhys$ID)=paste("id",sample.int(length(levels(datasetPhys$ID))),sep="")
+levels(datasetPhys$ID)=levels(datasetMR$ID)
 
 #save full dataset to csv
-write.table(datasetMR,file="output\\datasetMR",sep=";", row.names = F)
-write.table(datasetPhys,file="output\\datasetPhys",sep=";", row.names = F)
+write.table(datasetMR,file="output\\datasetMR.csv",sep=";", row.names = F)
+write.table(datasetPhys,file="output\\datasetPhys.csv",sep=";", row.names = F)
