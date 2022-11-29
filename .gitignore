@@ -41,3 +41,7 @@ vignettes/*.pdf
 
 # openSesame file pool
 __pool__
+
+#logfiles and output
+logfiles
+output
