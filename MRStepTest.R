@@ -57,7 +57,7 @@ physData=merge(physData,questionnaireDataRPE,by=c("ID","condition","step"))
 physData=modifyPhysData(verbose,physData)
 #unify data
 datasetMR=merge(MRData,physData[physData$condition=="test",c("ID","step","outlierPhys","relativeResistance")],by=c("ID","step"))
-datasetPhys=physData
+datasetPhys=mergePhysDataRows(verbose,physData)
 
 #anonymise IDs to protect participant identity
 datasetMR$ID=as.factor(datasetMR$ID)

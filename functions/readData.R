@@ -406,6 +406,8 @@ modifyPhysData=function(verbose,physData){
   physData$maxPowerCondition=0
   physData$maxHRCondition=0
   physData$outlierPhys="noOutlier"
+  outlierTooFew=0
+  outlierTooMany=0
   for(thisID in unique(physData$ID)){
     for(thisCondition in unique(physData$condition)){
       thisIDmaxPowerCondition=max(physData$timeCorrectedPower[physData$ID==thisID & physData$condition==thisCondition])
@@ -422,26 +424,43 @@ modifyPhysData=function(verbose,physData){
     #compare number of steps
     if(thisIDmaxPower-thisIDstartPower<2*physData$stepsize[physData$ID==thisID][1]){
       physData$outlierPhys[physData$ID==thisID]="outlierTooFewSteps"
+      outlierTooFew=outlierTooFew+1
     }
     if(thisIDmaxPower-thisIDstartPower>9*physData$stepsize[physData$ID==thisID][1]){
       physData$outlierPhys[physData$ID==thisID]="outlierTooManySteps"
+      outlierTooMany=outlierTooMany+1
     }
   }
-  #merge rows with same values (last step <30 seconds)
-  library(plyr)
-  physData=ddply(physData,
-                  .(ID,condition,Gender,Experience,Weight,timeCorrectedPower,maxPower,maxHR,maxPowerCondition,maxHRCondition,outlierPhys),
-                  summarize,
-                  step=min(step), #choose lower step if higher step not finished
-                  heartRate=max(heart_rate),
-                  power=min(power_output),
-                  cadence=weighted.mean(cadence,durationSeconds),
-                  cRPE=max(cRPE),
-                  RPE=max(RPE),
-                  durationSeconds=max(durationSeconds))
+  if (verbose>1) {
+    print(paste(outlierTooFew," outliers with too few steps"))
+    print(paste(outlierTooMany," outliers with too many steps"))
+  } 
   #get relative max power by condition
   physData$maxPowerConditionRelative=physData$maxPowerCondition/physData$Weight
   #get relative resistance
   physData$relativeResistance=physData$timeCorrectedPower/physData$maxPower
+  return(physData)
+}
+
+#merge rows of physData with same power values in different steps (last step <30 seconds)
+mergePhysDataRows=function(verbose,physData){
+  if (verbose>1) {
+    print("Merging same power rows of physiological data ...")
+  } 
+  rows1=nrow(physData)
+  library(plyr)
+  physData=ddply(physData,
+                 .(ID,condition,Gender,Experience,Weight,timeCorrectedPower,maxPower,maxHR,maxPowerCondition,maxHRCondition,outlierPhys,maxPowerConditionRelative,relativeResistance),
+                 summarize,
+                 step=min(step), #choose lower step if higher step not finished
+                 heartRate=max(heart_rate),
+                 power=min(power_output),
+                 cadence=weighted.mean(cadence,durationSeconds),
+                 cRPE=max(cRPE),
+                 RPE=max(RPE),
+                 durationSeconds=max(durationSeconds))
+  if (verbose>1) {
+    print(paste(rows1-nrow(physData)," rows merged"))
+  } 
   return(physData)
 }
