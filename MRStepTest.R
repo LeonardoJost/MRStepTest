@@ -68,3 +68,14 @@ levels(datasetPhys$ID)=levels(datasetMR$ID)
 #save full dataset to csv
 write.table(datasetMR,file="output\\datasetMR.csv",sep=";", row.names = F)
 write.table(datasetPhys,file="output\\datasetPhys.csv",sep=";", row.names = F)
+
+#generate datasets for analysis
+#no outliers
+datasetMRNoOutlier=datasetMR[which(!datasetMR$outlier & datasetMR$outlierPhys=="noOutlier"),]
+datasetPhysNoOutlier=datasetPhys[which(datasetPhys$outlierPhys=="noOutlier"),]
+#for analysis of maximal performance
+datasetPhysMaxPerformance=unique(datasetPhysNoOutlier[,c("ID","condition","Gender","maxPowerCondition","maxHRCondition")])
+#save datasets to csv
+write.table(datasetMRNoOutlier,file="output\\datasetMRNoOutlier.csv",sep=";", row.names = F)
+write.table(datasetPhysNoOutlier,file="output\\datasetPhysNoOutlier.csv",sep=";", row.names = F)
+write.table(datasetPhysMaxPerformance,file="output\\datasetPhysMaxPerformance.csv",sep=";", row.names = F)
