@@ -146,7 +146,7 @@ modifyMRData=function(verbose,MRData,outlierFactor) {
   MRData$direction=ifelse(MRData$deg>180,"-",ifelse(MRData$deg==0 | MRData$deg==180,"0","+"))
   MRData$deg=ifelse(MRData$deg>180,360-MRData$deg,MRData$deg)
   #drop unnecessary rows
-  MRData[,c("aaTestControl","stimulusBottom","stimulusLeft","stimulusRight","correct_response","axis","model")]=NULL
+  MRData[,c("aaTestControl","stimulusBottom","stimulusLeft","stimulusRight","correct_response","axis","model","block")]=NULL
   return(MRData)
 }
 

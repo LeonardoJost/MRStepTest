@@ -65,16 +65,28 @@ levels(datasetMR$ID)=paste("id",sample.int(length(levels(datasetMR$ID))),sep="")
 datasetPhys$ID=as.factor(datasetPhys$ID)
 levels(datasetPhys$ID)=levels(datasetMR$ID)
 
+#convert variables to sum contrasts 
+datasetPhys$conditionContrasts=sapply(as.factor(datasetPhys$condition),function(i) contr.sum(2)[i,])/2
+datasetPhys$genderContrasts=sapply(as.factor(datasetPhys$Gender),function(i) contr.sum(2)[i,])/2
+
 #save full dataset to csv
 write.table(datasetMR,file="output\\datasetMR.csv",sep=";", row.names = F)
 write.table(datasetPhys,file="output\\datasetPhys.csv",sep=";", row.names = F)
 
 #generate datasets for analysis
 #no outliers
-datasetMRNoOutlier=datasetMR[which(!datasetMR$outlier & datasetMR$outlierPhys=="noOutlier"),]
-datasetPhysNoOutlier=datasetPhys[which(datasetPhys$outlierPhys=="noOutlier"),]
+datasetMRNoOutlier=datasetMR[which(!datasetMR$outlier & datasetMR$outlierPhys=="noOutlier"),c("ID","type","reactionTime","startTimeOfStimulus","deg","modelNumber","relativeResistance")]
+datasetPhysNoOutlier=datasetPhys[which(datasetPhys$outlierPhys=="noOutlier"),c("ID","condition","conditionContrasts","Gender","genderContrasts","relativeResistance","cRPE","RPE","heartRate","cadence","maxPowerCondition","maxHRCondition")]
 #for analysis of maximal performance
-datasetPhysMaxPerformance=unique(datasetPhysNoOutlier[,c("ID","condition","Gender","maxPowerCondition","maxHRCondition")])
+datasetPhysMaxPerformance=unique(datasetPhysNoOutlier[,c("ID","conditionContrasts","genderContrasts","maxPowerCondition","maxHRCondition")])
+
+#center and normalize numeric variables after outlier exclusion
+datasetMRNoOutlier$deg=centerNormalize(datasetMRNoOutlier$deg)
+datasetMRNoOutlier$startTimeOfStimulus=centerNormalize(datasetMRNoOutlier$startTimeOfStimulus)
+datasetMRNoOutlier$relativeResistance=centerNormalize(datasetMRNoOutlier$relativeResistance)
+
+datasetPhysNoOutlier$relativeResistance=centerNormalize(datasetPhysNoOutlier$relativeResistance)
+
 #save datasets to csv
 write.table(datasetMRNoOutlier,file="output\\datasetMRNoOutlier.csv",sep=";", row.names = F)
 write.table(datasetPhysNoOutlier,file="output\\datasetPhysNoOutlier.csv",sep=";", row.names = F)

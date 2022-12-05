@@ -189,3 +189,11 @@ toAcc=function(logOdds){
   return(exp(logOdds)/(1+exp(logOdds)))
 }
 
+#scaling, centering function
+centerNormalize=function(vector){
+  vector=vector-min(vector)
+  vector=vector/max(vector)
+  vector=vector-mean(vector)
+  return(vector)
+}
+
