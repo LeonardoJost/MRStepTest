@@ -230,12 +230,12 @@ modelFormula=@formula(responseCorrect~startTimeOfStimulus*relativeResistance+rel
               (relativeResistance^2|ID)+
               zerocorr(deg|modelNumber))
 @elapsed slopesModel82=fit(MixedModel,modelFormula,dataset,Binomial())
-show(MixedModels.likelihoodratiotest(slopesModel8,slopesModel82))
+show(MixedModels.likelihoodratiotest(slopesModel82,slopesModel8))
 modelFormula=@formula(responseCorrect~relativeResistance^2+deg+startTimeOfStimulus*relativeResistance+
               (relativeResistance^2|ID)+
               zerocorr(deg|modelNumber))
 @elapsed slopesModel83=fit(MixedModel,modelFormula,dataset,Binomial())
-show(MixedModels.likelihoodratiotest(slopesModel8,slopesModel83))
+show(MixedModels.likelihoodratiotest(slopesModel83,slopesModel8))
 #good
 m1=slopesModel8
 #get fixed effects

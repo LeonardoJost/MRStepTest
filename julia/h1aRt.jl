@@ -90,48 +90,42 @@ show(MixedModels.likelihoodratiotest(slopesModel1,slopesModel15))
 show(MixedModels.likelihoodratiotest(slopesModel1,slopesModel16))
 show(MixedModels.likelihoodratiotest(slopesModel1,slopesModel17))
 show(MixedModels.likelihoodratiotest(slopesModel1,slopesModel18))
-#largest p for 14
-slopesModel2=slopesModel14
+#largest p for 18
+slopesModel2=slopesModel18
 
 #deg|ID
 modelFormula=@formula(reactionTime~deg+startTimeOfStimulus*relativeResistance+relativeResistance^2+
-              (startTimeOfStimulus+relativeResistance+relativeResistance^2|ID)+
-              (deg+startTimeOfStimulus*relativeResistance+relativeResistance^2|modelNumber))
+              (startTimeOfStimulus*relativeResistance+relativeResistance^2|ID)+
+              (deg+startTimeOfStimulus*relativeResistance|modelNumber))
 @elapsed slopesModel21=fit(LinearMixedModel,modelFormula, datasetRT,REML=false)
-#startTimeOfStimulus|ID
-modelFormula=@formula(reactionTime~deg+startTimeOfStimulus*relativeResistance+relativeResistance^2+
-              (deg+relativeResistance+relativeResistance^2|ID)+
-              (deg+startTimeOfStimulus*relativeResistance+relativeResistance^2|modelNumber))
-@elapsed slopesModel22=fit(LinearMixedModel,modelFormula, datasetRT,REML=false)
-#relativeResistance^2|ID
-modelFormula=@formula(reactionTime~deg+startTimeOfStimulus*relativeResistance+relativeResistance^2+
-              (deg+startTimeOfStimulus+relativeResistance|ID)+
-              (deg+startTimeOfStimulus*relativeResistance+relativeResistance^2|modelNumber))
-@elapsed slopesModel23=fit(LinearMixedModel,modelFormula, datasetRT,REML=false)
-#deg|modelNumber
-modelFormula=@formula(reactionTime~deg+startTimeOfStimulus*relativeResistance+relativeResistance^2+
-              (deg+startTimeOfStimulus+relativeResistance+relativeResistance^2|ID)+
-              (startTimeOfStimulus*relativeResistance+relativeResistance^2|modelNumber))
-@elapsed slopesModel24=fit(LinearMixedModel,modelFormula, datasetRT,REML=false)
-#startTimeOfStimulus*relativeResistance|modelNumber
-modelFormula=@formula(reactionTime~deg+startTimeOfStimulus*relativeResistance+relativeResistance^2+
-              (deg+startTimeOfStimulus+relativeResistance+relativeResistance^2|ID)+
-              (deg+startTimeOfStimulus+relativeResistance+relativeResistance^2|modelNumber))
-@elapsed slopesModel25=fit(LinearMixedModel,modelFormula, datasetRT,REML=false)
-#relativeResistance^2|modelNumber
+#startTimeOfStimulus*relativeResistance|ID
 modelFormula=@formula(reactionTime~deg+startTimeOfStimulus*relativeResistance+relativeResistance^2+
               (deg+startTimeOfStimulus+relativeResistance+relativeResistance^2|ID)+
               (deg+startTimeOfStimulus*relativeResistance|modelNumber))
-@elapsed slopesModel26=fit(LinearMixedModel,modelFormula, datasetRT,REML=false)
+@elapsed slopesModel22=fit(LinearMixedModel,modelFormula, datasetRT,REML=false)
+#relativeResistance^2|ID
+modelFormula=@formula(reactionTime~deg+startTimeOfStimulus*relativeResistance+relativeResistance^2+
+              (deg+startTimeOfStimulus*relativeResistance|ID)+
+              (deg+startTimeOfStimulus*relativeResistance|modelNumber))
+@elapsed slopesModel23=fit(LinearMixedModel,modelFormula, datasetRT,REML=false)
+#deg|modelNumber
+modelFormula=@formula(reactionTime~deg+startTimeOfStimulus*relativeResistance+relativeResistance^2+
+              (deg+startTimeOfStimulus*relativeResistance+relativeResistance^2|ID)+
+              (startTimeOfStimulus*relativeResistance|modelNumber))
+@elapsed slopesModel24=fit(LinearMixedModel,modelFormula, datasetRT,REML=false)
+#startTimeOfStimulus*relativeResistance|modelNumber
+modelFormula=@formula(reactionTime~deg+startTimeOfStimulus*relativeResistance+relativeResistance^2+
+              (deg+startTimeOfStimulus*relativeResistance+relativeResistance^2|ID)+
+              (deg+startTimeOfStimulus+relativeResistance|modelNumber))
+@elapsed slopesModel25=fit(LinearMixedModel,modelFormula, datasetRT,REML=false)
 #comparison
 show(MixedModels.likelihoodratiotest(slopesModel2,slopesModel21))
 show(MixedModels.likelihoodratiotest(slopesModel2,slopesModel22))
 show(MixedModels.likelihoodratiotest(slopesModel2,slopesModel23))
 show(MixedModels.likelihoodratiotest(slopesModel2,slopesModel24))
 show(MixedModels.likelihoodratiotest(slopesModel2,slopesModel25))
-show(MixedModels.likelihoodratiotest(slopesModel2,slopesModel26))
-#26 n.s.
-slopesModel3=slopesModel26
+#largest p for 22
+slopesModel3=slopesModel22
 #deg|ID
 modelFormula=@formula(reactionTime~deg+startTimeOfStimulus*relativeResistance+relativeResistance^2+
               (startTimeOfStimulus+relativeResistance+relativeResistance^2|ID)+
