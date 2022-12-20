@@ -1,3 +1,7 @@
+
+
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.7462019.svg)](https://doi.org/10.5281/zenodo.7462019)
+
 # MRStepTest
 
 Repository for an experiment of simultaneous mental rotation tasks and maximum performance cycling test.
