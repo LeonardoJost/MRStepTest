@@ -21,6 +21,7 @@ using DataFramesMeta
 using CSV
 using StatsBase
 using Gadfly
+using Cairo
 
 #read data
 dataset=CSV.read("dataset\\datasetMRNoOutlier.csv", DataFrame)
@@ -235,7 +236,7 @@ modelFormula=@formula(responseCorrect~relativeResistance^2+deg+startTimeOfStimul
               (relativeResistance^2|ID)+
               zerocorr(deg|modelNumber))
 @elapsed slopesModel83=fit(MixedModel,modelFormula,dataset,Binomial())
-show(MixedModels.likelihoodratiotest(slopesModel83,slopesModel8))
+show(MixedModels.likelihoodratiotest(slopesModel8,slopesModel83))
 #good
 m1=slopesModel8
 #get fixed effects
@@ -270,3 +271,9 @@ show(MixedModels.likelihoodratiotest(m1,m12))
 show(MixedModels.likelihoodratiotest(m1,m13))
 show(MixedModels.likelihoodratiotest(m1,m14))
 show(MixedModels.likelihoodratiotest(m1,m15))
+
+#residual plots
+hist=plot(x=StatsBase.residuals(m1),Geom.histogram, Guide.xlabel("Residuals"))
+resplot=plot(y=fitted(m1), x=StatsBase.residuals(m1),Guide.xlabel("Residuals"),Guide.ylabel("Fitted values"))
+draw(PNG("figs/Residual Plots/hist1acc.png"),hist)
+draw(PNG("figs/Residual Plots/resplot1acc.png"),resplot)

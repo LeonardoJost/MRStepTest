@@ -21,6 +21,7 @@ using DataFramesMeta
 using CSV
 using StatsBase
 using Gadfly
+using Cairo
 
 #read data
 dataset=CSV.read("dataset\\datasetMRNoOutlier.csv", DataFrame)
@@ -282,5 +283,7 @@ show(MixedModels.likelihoodratiotest(m1,m14))
 show(MixedModels.likelihoodratiotest(m1,m15))
 
 #residual plot
-plot(x=StatsBase.residuals(m1),y=fitted(m1))
-plot(x=StatsBase.residuals(m1), Geom.histogram)
+hist=plot(x=StatsBase.residuals(m1),Geom.histogram, Guide.xlabel("Residuals"))
+resplot=plot(x=StatsBase.residuals(m1),y=fitted(m1), Guide.xlabel("Residuals"),Guide.ylabel("Fitted values"))
+draw(PNG("figs/Residual Plots/hist1rt.png"),hist)
+draw(PNG("figs/Residual Plots/resplot1rt.png"),resplot)

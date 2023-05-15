@@ -76,9 +76,9 @@ write.table(datasetPhys,file="output\\datasetPhys.csv",sep=";", row.names = F)
 #generate datasets for analysis
 #no outliers
 datasetMRNoOutlier=datasetMR[which(!datasetMR$outlier & datasetMR$outlierPhys=="noOutlier"),c("ID","type","reactionTime","startTimeOfStimulus","deg","modelNumber","relativeResistance")]
-datasetPhysNoOutlier=datasetPhys[which(datasetPhys$outlierPhys=="noOutlier"),c("ID","condition","conditionContrasts","Gender","genderContrasts","relativeResistance","cRPE","RPE","heartRate","cadence","maxPowerCondition","maxHRCondition")]
+datasetPhysNoOutlier=datasetPhys[which(datasetPhys$outlierPhys=="noOutlier"),c("ID","condition","conditionContrasts","Gender","genderContrasts","relativeResistance","cRPE","RPE","heartRate","cadence","maxPowerCondition","maxHRCondition","maxPowerConditionRelative")]
 #for analysis of maximal performance
-datasetPhysMaxPerformance=unique(datasetPhysNoOutlier[,c("ID","conditionContrasts","genderContrasts","maxPowerCondition","maxHRCondition")])
+datasetPhysMaxPerformance=unique(datasetPhysNoOutlier[,c("ID","Gender","condition","conditionContrasts","genderContrasts","maxPowerCondition","maxHRCondition","maxPowerConditionRelative")])
 
 #center and normalize numeric variables after outlier exclusion
 datasetMRNoOutlier$deg=centerNormalize(datasetMRNoOutlier$deg)

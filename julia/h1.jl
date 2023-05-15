@@ -20,7 +20,9 @@ using Random
 using DataFrames
 using DataFramesMeta
 using Gadfly
+using StatsBase
 using CSV
+using Cairo
 #read data
 dataset=CSV.read("dataset\\datasetPhysNoOutlier.csv", DataFrame)
 #inspect data
@@ -54,8 +56,10 @@ modelFormula=@formula(cRPE~1+zerocorr(relativeResistance|ID))
 show(MixedModels.likelihoodratiotest(m1,m2))
 
 #residual plot
-plot(x=StatsBase.residuals(m1),Geom.histogram)
-plot(x=StatsBase.residuals(m1),y=fitted(m1))
+hist=plot(x=StatsBase.residuals(m1),Geom.histogram, Guide.xlabel("Residuals"))
+resplot=plot(x=StatsBase.residuals(m1),y=fitted(m1), Guide.xlabel("Residuals"),Guide.ylabel("Fitted values"))
+draw(PNG("figs/Residual Plots/hist1.png"),hist)
+draw(PNG("figs/Residual Plots/resplot1.png"),resplot)
 
 #exploratory
 #compare with control condition
@@ -87,5 +91,7 @@ modelFormula=@formula(cRPE~relativeResistance&conditionContrasts+relativeResista
 show(MixedModels.likelihoodratiotest(m1,m12))
 
 #residual plot
-plot(x=StatsBase.residuals(m1),Geom.histogram)
-plot(x=StatsBase.residuals(m1),y=fitted(m1))
+hist=plot(x=StatsBase.residuals(m1),Geom.histogram, Guide.xlabel("Residuals"))
+resplot=plot(x=StatsBase.residuals(m1),y=fitted(m1), Guide.xlabel("Residuals"),Guide.ylabel("Fitted values"))
+draw(PNG("figs/Residual Plots/hist1ex.png"),hist)
+draw(PNG("figs/Residual Plots/resplot1ex.png"),resplot)

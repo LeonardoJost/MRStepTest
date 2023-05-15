@@ -21,6 +21,8 @@ using DataFrames
 using DataFramesMeta
 using Gadfly
 using CSV
+using StatsBase
+using Cairo
 #read data
 dataset=CSV.read("dataset\\datasetPhysMaxPerformance.csv", DataFrame)
 #inspect data
@@ -31,16 +33,16 @@ show(eltype.(eachcol(dataset)))
 
 #random slopes
 #start with maximal model
-modelFormula=@formula(maxPowerCondition~conditionContrasts+genderContrasts+(conditionContrasts|ID))
+modelFormula=@formula(maxPowerConditionRelative~conditionContrasts+genderContrasts+(conditionContrasts|ID))
 @elapsed slopesModel1=fit(LinearMixedModel,modelFormula, dataset,REML=false)
 show(slopesModel1.optsum)
 #remove random correlation
-modelFormula=@formula(maxPowerCondition~conditionContrasts+genderContrasts+zerocorr(conditionContrasts|ID))
+modelFormula=@formula(maxPowerConditionRelative~conditionContrasts+genderContrasts+zerocorr(conditionContrasts|ID))
 @elapsed slopesModel11=fit(LinearMixedModel,modelFormula, dataset,REML=false)
 show(MixedModels.likelihoodratiotest(slopesModel1,slopesModel11))
 #slopesModel1 is better
 #remove conditionContrasts|ID
-modelFormula=@formula(maxPowerCondition~conditionContrasts+genderContrasts+(1|ID))
+modelFormula=@formula(maxPowerConditionRelative~conditionContrasts+genderContrasts+(1|ID))
 @elapsed slopesModel12=fit(LinearMixedModel,modelFormula, dataset,REML=false)
 show(MixedModels.likelihoodratiotest(slopesModel1,slopesModel12))
 #slopesModel1 is best
@@ -48,11 +50,13 @@ show(MixedModels.likelihoodratiotest(slopesModel1,slopesModel12))
 #get fixed effect
 m1=slopesModel1
 #conditionContrasts
-modelFormula=@formula(maxPowerCondition~genderContrasts+(conditionContrasts|ID))
+modelFormula=@formula(maxPowerConditionRelative~genderContrasts+(conditionContrasts|ID))
 @elapsed m11=fit(LinearMixedModel,modelFormula, dataset,REML=false)
 #comparison
 show(MixedModels.likelihoodratiotest(m1,m11))
 
 #residual plot
-plot(x=StatsBase.residuals(m1),Geom.histogram)
-plot(x=StatsBase.residuals(m1),y=fitted(m1))
+hist=plot(x=StatsBase.residuals(m1),Geom.histogram, Guide.xlabel("Residuals"))
+resplot=plot(x=StatsBase.residuals(m1),y=fitted(m1), Guide.xlabel("Residuals"),Guide.ylabel("Fitted values"))
+draw(PNG("figs/Residual Plots/hist4a.png"),hist)
+draw(PNG("figs/Residual Plots/resplot4a.png"),resplot)
