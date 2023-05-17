@@ -16,7 +16,7 @@
 
 source("functions/helpers.R")
 source("functions/readData.R", encoding="utf-8")
-source("functions/generateGraphsAndTables.R", encoding="utf-8")
+
 
 ##create output directories, if they don't exist (outputs warnings otherwise)
 dir.create("figs")
@@ -83,11 +83,16 @@ datasetPhysMaxPerformance=unique(datasetPhysNoOutlier[,c("ID","Gender","conditio
 #center and normalize numeric variables after outlier exclusion
 datasetMRNoOutlier$deg=centerNormalize(datasetMRNoOutlier$deg)
 datasetMRNoOutlier$startTimeOfStimulus=centerNormalize(datasetMRNoOutlier$startTimeOfStimulus)
+datasetMRNoOutlier$relativeResistanceUnscaled=datasetMRNoOutlier$relativeResistance
 datasetMRNoOutlier$relativeResistance=centerNormalize(datasetMRNoOutlier$relativeResistance)
 
+datasetPhysNoOutlier$relativeResistanceUnscaled=datasetPhysNoOutlier$relativeResistance
 datasetPhysNoOutlier$relativeResistance=centerNormalize(datasetPhysNoOutlier$relativeResistance)
 
 #save datasets to csv
 write.table(datasetMRNoOutlier,file="output\\datasetMRNoOutlier.csv",sep=";", row.names = F)
 write.table(datasetPhysNoOutlier,file="output\\datasetPhysNoOutlier.csv",sep=";", row.names = F)
 write.table(datasetPhysMaxPerformance,file="output\\datasetPhysMaxPerformance.csv",sep=";", row.names = F)
+
+#create graphs
+source("functions/generateGraphsAndTables.R", encoding="utf-8")
