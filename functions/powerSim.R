@@ -71,7 +71,7 @@ randSim=function(ns,reps=1000,rmCorrelation=0.66,totalSd=1){
     significant = matrix(nrow=reps, ncol=3)
     for(i in 1:reps){
       testdata=generateData(n,rmCorrelation,totalSd)
-      significant[i,]=getSignificantLmer(testdata)<0.05
+      significant[i,]=getSignificantLmer(testdata)<0.1 
     }
     #save proportion to data frame
     significantDataFrame$propSignificant[which(significantDataFrame$n==n & significantDataFrame$effects=="factor1*factor2")]=
@@ -98,13 +98,13 @@ set.seed(65622)
 
 #power calculation using simulations
 ns=c(41)
-significantDataFrame=randSim(ns,rmCorrelation=0.5,totalSd=sqrt(2))
-significantDataFrame2=randSim(ns,rmCorrelation=0.66,totalSd=sqrt(2))
+significantDataFrame=randSim(ns,rmCorrelation=0.5,totalSd=1)
+significantDataFrame2=randSim(ns,rmCorrelation=0.66,totalSd=1)
 
 #power calculation using superpower
 mu = c(0,0,0,0.8) #at sd of 1 this should equal cohens d of 0.4
-n = 41
-sd = sqrt(2) #increase sd to achieve same results as gpower
+n = 41 #for comparisons with GPower and between effects: here: n per group, GPower: total N
+sd = 1 
 r = .66
 string = "2w*2w"
 alpha_level = 0.1 #double alpha level because of directed effects/analysis
